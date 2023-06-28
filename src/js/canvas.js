@@ -11,7 +11,9 @@ const mouse = {
   y: innerHeight / 2
 }
 
-const colors = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66']
+const colors = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66'];
+var gravity = 1;
+var friction = 0.59;
 
 // Event Listeners
 addEventListener('mousemove', (event) => {
@@ -26,11 +28,17 @@ addEventListener('resize', () => {
   init()
 })
 
+addEventListener('click',function(event){
+  init();
+});
+
 // Objects
-class Object {
-  constructor(x, y, radius, color) {
+class Ball {
+  constructor(x, y, dx, dy, radius, color) {
     this.x = x
     this.y = y
+    this.dy = dy;
+    this.dx = dx;
     this.radius = radius
     this.color = color
   }
@@ -40,21 +48,39 @@ class Object {
     c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
     c.fillStyle = this.color
     c.fill()
+    c.stroke();
     c.closePath()
   }
 
   update() {
+    if(this.y + this.radius + this.dy > canvas.height){
+      this.dy *= -1 * friction;
+    }
+    else{
+      this.dy += gravity;
+    }
+    if(this.x + this.radius + this.dx > canvas.width || this.x - this.radius < 0){
+      this.dx *= -1 ;
+    }
+    this.y += this.dy;
+    this.x += this.dx;
     this.draw()
   }
 }
 
 // Implementation
-let objects
-function init() {
-  objects = []
+let balls = [];
 
-  for (let i = 0; i < 400; i++) {
-    // objects.push()
+function init() {
+  balls = [];
+  for(var i = 0; i < 400 ; i++){
+    var radius = utils.randomIntFromRange(8,20);
+    var x = utils.randomIntFromRange(0 + radius, canvas.width - radius);
+    var y = utils.randomIntFromRange(0, canvas.height - radius);
+    var dx = utils.randomIntFromRange(-2,2);
+    var dy = utils.randomIntFromRange(-2,2)
+    var color = utils.randomColor(colors);
+    balls.push(new Ball(x, y,dx ,dy ,radius,color));
   }
 }
 
@@ -62,11 +88,9 @@ function init() {
 function animate() {
   requestAnimationFrame(animate)
   c.clearRect(0, 0, canvas.width, canvas.height)
-
-  c.fillText('HTML CANVAS BOILERPLATE', mouse.x, mouse.y)
-  // objects.forEach(object => {
-  //  object.update()
-  // })
+  balls.forEach((x)=>{
+    x.update();
+  });
 }
 
 init()
